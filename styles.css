@@ -1,0 +1,60 @@
+/* Container for the Villain Points HUD */
+#villain-points-hud {
+    position: fixed;
+    bottom: 120px;
+    left: 20px;
+    width: auto;
+    height: auto;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #5e0000;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    z-index: 60; /* Above most UI but below windows */
+    box-shadow: 0 0 10px #000;
+    pointer-events: auto;
+    backdrop-filter: blur(2px);
+}
+
+/* The Label */
+#villain-points-hud h3 {
+    margin: 0;
+    color: #ffcccc;
+    font-family: "Signika", sans-serif;
+    font-size: 14px;
+    text-shadow: 0 0 5px red;
+    border-bottom: 1px solid #5e0000;
+    width: 100%;
+    text-align: center;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+}
+
+/* The container for the skull icons */
+.vp-container {
+    display: flex;
+    gap: 8px;
+}
+
+/* The Icons */
+.vp-point {
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #333; /* Default inactive color */
+    filter: drop-shadow(0 0 2px black);
+}
+
+/* Active State (Points available) */
+.vp-point.active {
+    color: #ff3333;
+    text-shadow: 0 0 8px #ff0000;
+    transform: scale(1.1);
+}
+
+.vp-point:hover {
+    transform: scale(1.3);
+}

@@ -1,0 +1,23 @@
+{
+  "id": "pf2e-villain-points",
+  "title": "PF2e Villain Points",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "13.351"
+  },
+  "relationships": {
+    "systems": [{
+      "id": "pf2e",
+      "type": "system",
+      "compatibility": {
+        "minimum": "7.0.0"
+      }
+    }]
+  },
+  "esmodules": ["scripts/module.js"],
+  "styles": ["styles.css"],
+  "description": "Adds GM-exclusive Villain Points to reroll dice.",
+  "manifest": "https://raw.githubusercontent.com/Quairon-Nailo/pf2e-villain-points/main/module.json",
+  "download": "https://github.com/Quairon-Nailo/pf2e-villain-points/releases/latest/download/module.zip"
+}
