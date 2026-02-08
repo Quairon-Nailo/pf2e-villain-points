@@ -1,8 +1,9 @@
 /* Container for the Villain Points HUD */
 #villain-points-hud {
     position: fixed;
-    bottom: 120px;
-    left: 20px;
+    /* Default position */
+    top: 150px; 
+    left: 120px;
     width: auto;
     height: auto;
     background: rgba(0, 0, 0, 0.6);
@@ -13,10 +14,28 @@
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    z-index: 60; /* Above most UI but below windows */
+    z-index: 60;
     box-shadow: 0 0 10px #000;
     pointer-events: auto;
     backdrop-filter: blur(2px);
+}
+
+/* The Drag Handle Icon */
+.vp-drag-handle {
+    color: #555;
+    font-size: 12px;
+    margin-bottom: 5px;
+    cursor: grab;
+    transition: color 0.2s;
+    width: 100%;
+    text-align: center;
+}
+.vp-drag-handle:hover {
+    color: #ccc;
+}
+.vp-drag-handle:active {
+    cursor: grabbing;
+    color: #fff;
 }
 
 /* The Label */
@@ -31,6 +50,7 @@
     text-align: center;
     padding-bottom: 3px;
     margin-bottom: 5px;
+    pointer-events: none; 
 }
 
 /* The container for the skull icons */
@@ -39,13 +59,21 @@
     gap: 8px;
 }
 
-/* The Icons */
+/* The Icons (Default: Read Only) */
 .vp-point {
     font-size: 24px;
-    cursor: pointer;
+    cursor: default; /* Default to standard cursor for players */
     transition: all 0.2s ease;
-    color: #333; /* Default inactive color */
+    color: #333;
     filter: drop-shadow(0 0 2px black);
+}
+
+/* Interactivity (GM Only) */
+.vp-point.interactive {
+    cursor: pointer;
+}
+.vp-point.interactive:hover {
+    transform: scale(1.3);
 }
 
 /* Active State (Points available) */
@@ -53,8 +81,4 @@
     color: #ff3333;
     text-shadow: 0 0 8px #ff0000;
     transform: scale(1.1);
-}
-
-.vp-point:hover {
-    transform: scale(1.3);
 }
