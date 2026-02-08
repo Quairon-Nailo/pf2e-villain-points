@@ -88,3 +88,14 @@
     text-shadow: 0 0 8px #ff0000;
     transform: scale(1.1);
 }
+/* Force-hide the resize handle injected by Foundry */
+#villain-points-hud .window-resizable-handle {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Ensure the HUD doesn't have an overflow scrollbar if resize logic acts up */
+#villain-points-hud {
+    overflow: hidden;
+}

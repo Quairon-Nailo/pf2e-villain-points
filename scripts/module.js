@@ -69,6 +69,8 @@ class VillainHUD extends Application {
             id: "villain-points-hud",
             template: null,
             popOut: false,
+            resizable: false, // Ensure this is false
+            minimizable: false // Prevents right-click collapsing
         });
     }
 
