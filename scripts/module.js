@@ -28,7 +28,6 @@ class VillainPointManager {
 
     static async rerollMessage(messageId) {
         if (!game.user.isGM) return;
-
         const message = game.messages.get(messageId);
         if (!message) return;
 
@@ -73,11 +72,20 @@ class VillainHUD extends Application {
         });
     }
 
+    /**
+     * Fix for the "Jumping" bug:
+     * We must update the internal this.position state so Draggable knows where we are.
+     */
     async setPosition({ left, top }) {
         const hud = document.getElementById("villain-points-hud");
         if (hud) {
             hud.style.left = `${left}px`;
             hud.style.top = `${top}px`;
+            
+            // Sync internal state to prevent snapping to 0,0 on next drag
+            this.position.left = left;
+            this.position.top = top;
+
             await game.user.setFlag(MODULE_ID, POS_FLAG, { left, top });
         }
     }
@@ -85,50 +93,59 @@ class VillainHUD extends Application {
     render(force = false) {
         let hud = document.getElementById("villain-points-hud");
         
-        // 1. Create container if it doesn't exist
+        // 1. Initial Setup (Run Once)
         if (!hud) {
             hud = document.createElement("div");
             hud.id = "villain-points-hud";
+            
+            // Build the static skeleton (Handle + Title + Content Area)
+            hud.innerHTML = `
+                <div id="vp-drag-bar">
+                    <i class="fas fa-arrows-up-down-left-right vp-drag-handle" title="Drag to move"></i>
+                </div>
+                <h3>Villain Points</h3>
+                <div id="vp-skull-container" class="vp-container"></div>
+            `;
+            
             document.body.append(hud);
             
-            // Restore position
+            // Apply saved position
             const pos = game.user.getFlag(MODULE_ID, POS_FLAG);
             if (pos) {
                 hud.style.left = `${pos.left}px`;
                 hud.style.top = `${pos.top}px`;
+                // Sync internal state immediately
+                this.position.left = pos.left;
+                this.position.top = pos.top;
+            }
+
+            // Initialize Draggable ONCE. 
+            // We target the specifically ID'd drag bar now for better control.
+            const dragHandle = hud.querySelector(".vp-drag-handle");
+            if (dragHandle) {
+                this._dragHandler = new Draggable(this, hud, dragHandle, { resizable: false });
             }
         }
+
+        // 2. Dynamic Update (Runs on every point change)
+        const container = document.getElementById("vp-skull-container");
+        if (!container) return; // Safety check
 
         const points = VillainPointManager.points;
         const isGM = game.user.isGM;
         const interactClass = isGM ? "interactive" : "";
 
-        // 2. Build HTML
-        let html = `
-            <i class="fas fa-arrows-up-down-left-right vp-drag-handle" title="Drag to move"></i>
-            <h3>Villain Points</h3>
-            <div class="vp-container">`;
-        
+        let html = ``;
         for (let i = 1; i <= 3; i++) {
             const isActive = i <= points ? "active" : "inactive";
             html += `<i class="fa-solid fa-skull vp-point ${isActive} ${interactClass}" data-idx="${i}"></i>`;
         }
-        html += `</div>`;
-
-        hud.innerHTML = html;
-
-        // 3. FIX: Re-initialize Draggable using RAW DOM elements (No jQuery)
-        this._dragHandler = null; 
         
-        const dragHandle = hud.querySelector(".vp-drag-handle");
-        if (dragHandle) {
-            // V13 Fix: Passing 'hud' and 'dragHandle' directly, removed $() wrappers
-            this._dragHandler = new Draggable(this, hud, dragHandle, { resizable: false });
-        }
+        container.innerHTML = html;
 
-        // 4. Re-attach Click Listeners (Only for GM)
+        // 3. Re-attach Listeners to Skulls (GM Only)
         if (isGM) {
-            const skulls = hud.querySelectorAll(".vp-point");
+            const skulls = container.querySelectorAll(".vp-point");
             skulls.forEach(skull => {
                 skull.addEventListener("click", async (ev) => {
                     const idx = parseInt(ev.target.dataset.idx);
@@ -175,6 +192,8 @@ Hooks.once('ready', () => {
 
 Hooks.on("updateUser", (user, changes) => {
     if (user.id === game.user.id && changes.flags?.[MODULE_ID]) {
+        // Just re-render. Since we don't nuke the HUD element anymore, 
+        // this is safe and efficient.
         villainHUD.render();
     }
 });

@@ -20,15 +20,21 @@
     backdrop-filter: blur(2px);
 }
 
+/* Drag Bar Container */
+#vp-drag-bar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 2px;
+}
+
 /* The Drag Handle Icon */
 .vp-drag-handle {
-    color: #555;
-    font-size: 12px;
-    margin-bottom: 5px;
+    color: #888;
+    font-size: 14px;
     cursor: grab;
     transition: color 0.2s;
-    width: 100%;
-    text-align: center;
+    padding: 2px 10px; /* Bigger grab area */
 }
 .vp-drag-handle:hover {
     color: #ccc;
@@ -62,7 +68,7 @@
 /* The Icons (Default: Read Only) */
 .vp-point {
     font-size: 24px;
-    cursor: default; /* Default to standard cursor for players */
+    cursor: default;
     transition: all 0.2s ease;
     color: #333;
     filter: drop-shadow(0 0 2px black);
