@@ -115,19 +115,18 @@ class VillainHUD extends Application {
         }
         html += `</div>`;
 
-        // 3. Inject HTML (This kills old listeners/elements)
         hud.innerHTML = html;
 
-        // 4. FIX: Re-initialize Draggable every time we render
-        // We clear the old reference because the DOM element it pointed to is gone
+        // 3. FIX: Re-initialize Draggable using RAW DOM elements (No jQuery)
         this._dragHandler = null; 
         
         const dragHandle = hud.querySelector(".vp-drag-handle");
         if (dragHandle) {
-            this._dragHandler = new Draggable(this, $(hud), $(dragHandle), { resizable: false });
+            // V13 Fix: Passing 'hud' and 'dragHandle' directly, removed $() wrappers
+            this._dragHandler = new Draggable(this, hud, dragHandle, { resizable: false });
         }
 
-        // 5. Re-attach Click Listeners (Only for GM)
+        // 4. Re-attach Click Listeners (Only for GM)
         if (isGM) {
             const skulls = hud.querySelectorAll(".vp-point");
             skulls.forEach(skull => {
