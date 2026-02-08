@@ -7,12 +7,11 @@ const POS_FLAG = "hudPosition";
  */
 class VillainPointManager {
     static get points() {
-        // Read from Global World Settings so players see the same value
         return game.settings.get(MODULE_ID, SETTING_NAME);
     }
 
     static async setPoints(value) {
-        if (!game.user.isGM) return; // Security check
+        if (!game.user.isGM) return;
         const clamped = Math.max(0, Math.min(3, value));
         await game.settings.set(MODULE_ID, SETTING_NAME, clamped);
     }
@@ -79,22 +78,20 @@ class VillainHUD extends Application {
         if (hud) {
             hud.style.left = `${left}px`;
             hud.style.top = `${top}px`;
-            // Each user saves their own position
             await game.user.setFlag(MODULE_ID, POS_FLAG, { left, top });
         }
     }
 
     render(force = false) {
-        // REMOVED: if (!game.user.isGM) return; 
-        // Now everyone can render it.
-
         let hud = document.getElementById("villain-points-hud");
         
+        // 1. Create container if it doesn't exist
         if (!hud) {
             hud = document.createElement("div");
             hud.id = "villain-points-hud";
             document.body.append(hud);
             
+            // Restore position
             const pos = game.user.getFlag(MODULE_ID, POS_FLAG);
             if (pos) {
                 hud.style.left = `${pos.left}px`;
@@ -106,6 +103,7 @@ class VillainHUD extends Application {
         const isGM = game.user.isGM;
         const interactClass = isGM ? "interactive" : "";
 
+        // 2. Build HTML
         let html = `
             <i class="fas fa-arrows-up-down-left-right vp-drag-handle" title="Drag to move"></i>
             <h3>Villain Points</h3>
@@ -113,20 +111,23 @@ class VillainHUD extends Application {
         
         for (let i = 1; i <= 3; i++) {
             const isActive = i <= points ? "active" : "inactive";
-            // We add the 'interactive' class only if GM
             html += `<i class="fa-solid fa-skull vp-point ${isActive} ${interactClass}" data-idx="${i}"></i>`;
         }
         html += `</div>`;
 
+        // 3. Inject HTML (This kills old listeners/elements)
         hud.innerHTML = html;
 
-        // Setup Draggable (Everyone can drag)
+        // 4. FIX: Re-initialize Draggable every time we render
+        // We clear the old reference because the DOM element it pointed to is gone
+        this._dragHandler = null; 
+        
         const dragHandle = hud.querySelector(".vp-drag-handle");
-        if (dragHandle && !this._dragHandler) {
+        if (dragHandle) {
             this._dragHandler = new Draggable(this, $(hud), $(dragHandle), { resizable: false });
         }
 
-        // Setup Listeners (Only GM can click)
+        // 5. Re-attach Click Listeners (Only for GM)
         if (isGM) {
             const skulls = hud.querySelectorAll(".vp-point");
             skulls.forEach(skull => {
@@ -141,6 +142,7 @@ class VillainHUD extends Application {
                         await VillainPointManager.setPoints(idx);
                     }
                 });
+                
                 skull.addEventListener("contextmenu", async (ev) => {
                     ev.preventDefault();
                     await VillainPointManager.setPoints(0);
@@ -157,31 +159,27 @@ const villainHUD = new VillainHUD();
 /* -------------------------------------------- */
 
 Hooks.once('init', () => {
-    // Register the setting so it is synced across clients
     game.settings.register(MODULE_ID, SETTING_NAME, {
         name: "Villain Points",
-        scope: "world",      // Synced to everyone
-        config: false,       // Hidden from settings menu
+        scope: "world",
+        config: false,
         type: Number,
         default: 0,
-        onChange: () => villainHUD.render() // Auto-render when changed
+        onChange: () => villainHUD.render()
     });
 });
 
 Hooks.once('ready', () => {
-    // Render for everyone (GM and Players)
     villainHUD.render(true);
     console.log("PF2e Villain Points | HUD Initialized");
 });
 
-// Watch for User Flag changes (Window Position)
 Hooks.on("updateUser", (user, changes) => {
     if (user.id === game.user.id && changes.flags?.[MODULE_ID]) {
         villainHUD.render();
     }
 });
 
-// Context Menu (GM Only)
 Hooks.on("getChatLogEntryContext", (html, options) => {
     options.push({
         name: "Reroll with Villain Point",
